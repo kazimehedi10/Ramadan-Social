@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramadan Social Super App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        .active-nav { color: #1e5128 !important; border-top: 4px solid #1e5128; background: #f0fdf4; }
+        .hidden-page { display: none !important; }
+        #profileSidebar, #settingsSidebar { transition: transform 0.3s ease-in-out; }
+        .sidebar-hidden-left { transform: translateX(-100%); }
+        .sidebar-hidden-right { transform: translateX(100%); }
+        .sidebar-show { transform: translateX(0); }
+    </style>
+</head>
+<body class="max-w-md mx-auto h-screen shadow-2xl bg-white flex flex-col relative">
+
+    <div id="profileSidebar" class="fixed top-0 left-0 h-full w-72 bg-white z-[60] shadow-2xl sidebar-hidden-left p-6 flex flex-col">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="font-bold text-lg text-green-800">প্রোফাইল সেটিংস</h2>
+            <button onclick="toggleSidebar('profileSidebar')" class="text-gray-500 text-xl"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div id="loggedOutUI" class="text-center">
+            <div class="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl text-gray-400"><i class="fa-solid fa-user"></i></div>
+            <p class="text-gray-500 mb-6 text-sm">এডিট করতে লগইন করুন</p>
+            <button id="googleLoginBtn" class="w-full bg-green-700 text-white p-3 rounded-xl font-bold flex items-center justify-center gap-2">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" width="20" class="bg-white rounded-full"> Create Account
+            </button>
+        </div>
+
+        <div id="loggedInUI" class="hidden flex-1 flex flex-col">
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                <img id="sidebarUserImg" src="" class="w-24 h-24 rounded-full border-4 border-green-100 shadow-sm object-cover">
+                <label for="profileUpload" class="absolute bottom-0 right-0 bg-green-700 text-white p-2 rounded-full text-xs cursor-pointer shadow-md">
+                    <i class="fa-solid fa-camera"></i>
+                </label>
+            </div>
+            <label class="text-[10px] font-bold text-gray-400 ml-1 uppercase">Display Name</label>
+            <input id="editUserName" type="text" class="w-full border-b-2 border-green-100 focus:border-green-700 outline-none p-2 mb-6 text-gray-700 font-bold bg-transparent">
+            <p id="sidebarUserEmail" class="text-center text-[11px] text-gray-400 mb-8 italic"></p>
+            <button onclick="updateProfileName()" class="bg-green-700 text-white p-3 rounded-xl text-sm font-bold shadow-lg active:scale-95 transition">Save Changes</button>
+            <button onclick="logout()" class="mt-auto flex items-center gap-3 p-3 text-red-500 hover:bg-red-50 rounded-lg transition font-bold border-t">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <div id="settingsSidebar" class="fixed top-0 right-0 h-full w-64 bg-white z-[60] shadow-2xl sidebar-hidden-right p-6 flex flex-col">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="font-bold text-lg text-green-800">সেটিংস</h2>
+            <button onclick="toggleSidebar('settingsSidebar')" class="text-gray-500 text-xl"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="space-y-4 text-sm">
+            <button class="w-full flex items-center justify-between p-3 text-gray-700 hover:bg-gray-50 rounded-lg">
+                <span class="flex items-center gap-3"><i class="fa-solid fa-moon"></i> Dark Mode</span>
+                <div class="w-8 h-4 bg-gray-300 rounded-full relative"><div class="w-4 h-4 bg-white rounded-full shadow absolute left-0"></div></div>
+            </button>
+        </div>
+    </div>
+
+    <header class="flex justify-between items-center p-4 border-b bg-white sticky top-0 z-50">
+        <div onclick="toggleSidebar('profileSidebar')" class="cursor-pointer">
+            <img id="headerProfilePic" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="w-10 h-10 rounded-full border-2 border-green-600">
+        </div>
+        <h1 class="font-bold text-green-800 text-xl">রমজান সোশ্যাল</h1>
+        <button onclick="toggleSidebar('settingsSidebar')" class="text-gray-600 text-xl"><i class="fa-solid fa-gear"></i></button>
+    </header>
+
+    <section id="homePage" class="p-5 flex-1 overflow-y-auto">
+    <div class="relative overflow-hidden bg-gradient-to-br from-green-800 to-green-600 p-6 rounded-[2rem] shadow-2xl mb-8 text-white">
+        <div class="relative z-10 flex justify-between items-center">
+            <div>
+                <h2 id="liveTime" class="text-4xl font-black tracking-tighter mb-1">০০:০০</h2>
+                <p id="liveDay" class="text-lg font-bold opacity-90 text-white">লোড হচ্ছে...</p>
+                <div class="flex gap-2 text-[10px] font-medium opacity-75 mt-2 uppercase tracking-widest text-white">
+                    <span id="dateBn">-- ফেব্রুয়ারি, ২০২৬</span> • <span id="dateAr">-- শাবান</span>
+                </div>
+            </div>
+            <div class="text-right flex flex-col items-center">
+                <div class="bg-white/20 backdrop-blur-md p-3 rounded-2xl mb-1">
+                    <i class="fa-solid fa-mosque text-3xl"></i>
+                </div>
+                <span class="text-[10px] font-black uppercase tracking-widest opacity-90">Dhaka</span>
+            </div>
+        </div>
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full"></div>
+        <div class="absolute -bottom-10 -left-10 w-24 h-24 bg-black/10 rounded-full"></div>
+    </div>
+
+    <div class="flex items-center justify-between mb-5 px-1">
+        <h3 class="font-black text-gray-800 text-sm uppercase tracking-widest flex items-center gap-2">
+            <span class="w-2 h-2 bg-green-600 rounded-full animate-pulse"></span>
+            নামাজের সময়সূচী
+        </h3>
+        <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-3 py-1 rounded-full uppercase tracking-tighter">Prayer Times</span>
+    </div>
+
+    <div class="space-y-4 mb-10">
+        <div class="bg-white p-1 rounded-[1.5rem] shadow-sm border border-gray-100 flex items-center justify-between transition-all active:scale-95">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fa-solid fa-cloud-moon text-xl"></i>
+                </div>
+                <div><p class="font-black text-gray-800 tracking-tight">ফজর</p><p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">সময় শুরু</p></div>
+            </div>
+            <div class="pr-5"><span class="text-xl font-black text-gray-900 tracking-tighter">০৫:১২</span><span class="text-[10px] font-black text-gray-400 ml-1">AM</span></div>
+        </div>
+
+        <div class="bg-white p-1 rounded-[1.5rem] shadow-sm border border-gray-100 flex items-center justify-between transition-all active:scale-95">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fa-solid fa-sun text-xl"></i>
+                </div>
+                <div><p class="font-black text-gray-800 tracking-tight">যোহর</p><p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">সময় শুরু</p></div>
+            </div>
+            <div class="pr-5"><span class="text-xl font-black text-gray-900 tracking-tighter">১২:১০</span><span class="text-[10px] font-black text-gray-400 ml-1">PM</span></div>
+        </div>
+
+        <div class="bg-white p-1 rounded-[1.5rem] shadow-sm border border-gray-100 flex items-center justify-between transition-all active:scale-95">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-700 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fa-solid fa-circle-radiation text-xl"></i>                   
+                </div>
+                <div><p class="font-black text-gray-800 tracking-tight">আসর</p><p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">সময় শুরু</p></div>
+            </div>
+            <div class="pr-5"><span class="text-xl font-black text-gray-900 tracking-tighter">০৪:১৫</span><span class="text-[10px] font-black text-gray-400 ml-1">PM</span></div>
+        </div>
+
+        <div class="bg-white p-1 rounded-[1.5rem] shadow-sm border border-gray-100 flex items-center justify-between transition-all active:scale-95">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fa-solid fa-cloud-sun text-xl"></i>
+                </div>
+                <div><p class="font-black text-gray-800 tracking-tight">মাগরিব</p><p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">সময় শুরু</p></div>
+            </div>
+            <div class="pr-5"><span class="text-xl font-black text-gray-900 tracking-tighter">০৬:০৫</span><span class="text-[10px] font-black text-gray-400 ml-1">PM</span></div>
+        </div>
+
+        <div class="bg-white p-1 rounded-[1.5rem] shadow-sm border border-gray-100 flex items-center justify-between transition-all active:scale-95">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fa-solid fa-moon text-xl"></i>
+                </div>
+                <div><p class="font-black text-gray-800 tracking-tight">এশা</p><p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">সময় শুরু</p></div>
+            </div>
+            <div class="pr-5"><span class="text-xl font-black text-gray-900 tracking-tighter">০৭:২০</span><span class="text-[10px] font-black text-gray-400 ml-1">PM</span></div>
+        </div>
+    </div>
+</section>
+
+
+        <section id="chatPage" class="hidden-page flex-1 flex flex-col bg-gray-50 overflow-hidden">
+            <div id="chatBox" class="flex-1 space-y-4 overflow-y-auto p-4"></div>
+            <div id="chatBottomArea" class="p-4 bg-white border-t">
+                <div id="chatInputArea" class="hidden flex items-center gap-2 bg-gray-100 p-2 rounded-full px-4 border">
+                    <input id="msgInput" type="text" placeholder="মেসেজ লিখুন..." class="flex-1 bg-transparent py-2 outline-none text-sm">
+                    <button id="sendBtn" class="text-green-700"><i class="fa-solid fa-paper-plane text-xl"></i></button>
+                </div>
+                <p id="chatWarning" class="text-center text-red-500 text-[10px] font-bold">লগইন করুন চ্যাট করতে!</p>
+            </div>
+        </section>
+
+        <section id="leaderboardPage" class="hidden-page p-5 flex-1 overflow-y-auto">
+            <h3 class="font-black text-green-800 text-lg mb-6 text-center uppercase tracking-widest">সেরা ইবাদতকারী</h3>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between bg-gradient-to-r from-amber-50 to-white p-4 rounded-2xl border border-amber-200">
+                    <div class="flex items-center gap-4">
+                        <span class="text-xl font-black text-amber-500 w-5">১</span>
+                        <img src="https://i.pravatar.cc/150?u=1" class="w-10 h-10 rounded-full border-2 border-amber-400">
+                        <p class="font-bold text-gray-800 text-sm">আহমেদ রাজা</p>
+                    </div>
+                    <p class="text-xs font-black text-amber-600">১২৫০ পি</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="progressPage" class="hidden-page p-4 text-center mt-10 text-gray-400 font-bold">প্রগ্রেস ট্র্যাকার শীঘ্রই আসছে...</section>
+
+    </main>
+
+    <nav class="bg-white border-t flex justify-around py-3 sticky bottom-0 z-50">
+        <button onclick="showPage('home')" id="nav-home" class="flex flex-col items-center gap-1 text-gray-400 active-nav flex-1">
+            <i class="fa-solid fa-house text-xl"></i><span class="text-[10px] font-bold">হোম</span>
+        </button>
+        <button onclick="showPage('ramadan')" id="nav-ramadan" class="flex flex-col items-center gap-1 text-gray-400 flex-1">
+            <i class="fa-solid fa-moon text-xl"></i><span class="text-[10px] font-bold">রমজান</span>
+        </button>
+        <button onclick="showPage('chat')" id="nav-chat" class="flex flex-col items-center gap-1 text-gray-400 flex-1">
+            <i class="fa-solid fa-comments text-xl"></i><span class="text-[10px] font-bold">চ্যাট</span>
+        </button>
+        <button onclick="showPage('leaderboard')" id="nav-leaderboard" class="flex flex-col items-center gap-1 text-gray-400 flex-1">
+            <i class="fa-solid fa-trophy text-xl"></i><span class="text-[10px] font-bold">সেরা</span>
+        </button>
+        <button onclick="showPage('progress')" id="nav-progress" class="flex flex-col items-center gap-1 text-gray-400 flex-1">
+            <i class="fa-solid fa-chart-line text-xl"></i><span class="text-[10px] font-bold">প্রগ্রেস</span>
+        </button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzypoA8g3948i7oFrCrge8E3ZW_Xc3IdM",
+            authDomain: "ramadan-social.firebaseapp.com",
+            projectId: "ramadan-social",
+            storageBucket: "ramadan-social.firebasestorage.app",
+            messagingSenderId: "710798149184",
+            appId: "1:710798149184:web:5e1ae45b1f8dcc5bbcc1a5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        window.toggleSidebar = (id) => {
+            const el = document.getElementById(id);
+            if(id === 'profileSidebar') { el.classList.toggle('sidebar-hidden-left'); el.classList.toggle('sidebar-show'); }
+            else { el.classList.toggle('sidebar-hidden-right'); el.classList.toggle('sidebar-show'); }
+        }
+
+        document.getElementById('googleLoginBtn').onclick = () => signInWithPopup(auth, provider).then(() => toggleSidebar('profileSidebar'));
+        window.logout = () => signOut(auth).then(() => location.reload());
+
+        window.updateProfileName = async () => {
+            const newName = document.getElementById('editUserName').value;
+            if(newName.trim() && auth.currentUser) {
+                await updateProfile(auth.currentUser, { displayName: newName });
+                alert("নাম আপডেট হয়েছে!");
+                location.reload();
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById('loggedInUI').classList.remove('hidden');
+                document.getElementById('loggedOutUI').classList.add('hidden');
+                document.getElementById('headerProfilePic').src = user.photoURL;
+                document.getElementById('sidebarUserImg').src = user.photoURL;
+                document.getElementById('editUserName').value = user.displayName;
+                document.getElementById('sidebarUserEmail').innerText = user.email;
+                document.getElementById('chatInputArea').classList.remove('hidden');
+                document.getElementById('chatWarning').classList.add('hidden');
+
+                // ডাটাবেসে ইউজার সেভ (রजिস্ট্রেশন)
+                try {
+                    const userRef = doc(db, "users", user.uid);
+                    const userSnap = await getDoc(userRef);
+                    if (!userSnap.exists()) {
+                        await setDoc(userRef, {
+                            uid: user.uid,
+                            name: user.displayName,
+                            email: user.email,
+                            photo: user.photoURL,
+                            points: 0,
+                            lastLogin: serverTimestamp()
+                        });
+                        console.log("নতুন ইউজার রেজিস্টার্ড!");
+                    } else {
+                        await updateDoc(userRef, { lastLogin: serverTimestamp() });
+                    }
+                } catch (e) { console.log(e); }
+
+                loadMessages();
+            }
+        });
+
+        // ঘড়ি ও তারিখ অটো-আপডেট
+        function updateLiveDateTime() {
+            const now = new Date();
+            const toBn = n => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
+            let hours = now.getHours() % 12 || 12;
+            let minutes = now.getMinutes().toString().padStart(2, '0');
+            
+            if(document.getElementById('liveTime')) {
+                document.getElementById('liveTime').innerText = `${toBn(hours)}:${toBn(minutes)}`;
+                document.getElementById('liveDay').innerText = now.toLocaleDateString('bn-BD', { weekday: 'long' });
+                document.getElementById('dateBn').innerText = now.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' });
+                try {
+                    const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {day:'numeric', month:'long'}).format(now);
+                    document.getElementById('dateAr').innerText = hijri;
+                } catch(e) { document.getElementById('dateAr').innerText = "১৮ শাবান"; }
+            }
+        }
+        setInterval(updateLiveDateTime, 1000);
+        updateLiveDateTime();
+
+        window.showPage = (id) => {
+            document.querySelectorAll('main section').forEach(s => s.classList.add('hidden-page'));
+            const page = document.getElementById(id + 'Page');
+            if(page) page.classList.remove('hidden-page');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
+            const navBtn = document.getElementById('nav-' + id);
+            if(navBtn) navBtn.classList.add('active-nav');
+        }
+
+        document.getElementById('sendBtn').onclick = async () => {
+            const input = document.getElementById('msgInput');
+            if (input.value.trim() && auth.currentUser) {
+                await addDoc(collection(db, "messages"), {
+                    text: input.value, user: auth.currentUser.displayName,
+                    photo: auth.currentUser.photoURL, uid: auth.currentUser.uid, createdAt: serverTimestamp()
+                });
+                input.value = "";
+            }
+        }
+
+        function loadMessages() {
+            const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
+            onSnapshot(q, (sn) => {
+                const box = document.getElementById('chatBox'); box.innerHTML = "";
+                sn.docs.forEach(doc => {
+                    const d = doc.data(); const isMe = d.uid === auth.currentUser?.uid;
+                    box.innerHTML += `<div class="flex ${isMe ? 'justify-end' : 'justify-start'} mb-3">
+                        <div class="flex gap-2 max-w-[85%] ${isMe ? 'flex-row-reverse' : ''}">
+                            <img src="${d.photo}" class="w-8 h-8 rounded-full mt-1 border">
+                            <div class="${isMe ? 'bg-green-600 text-white rounded-l-2xl rounded-br-2xl' : 'bg-white border text-gray-800 rounded-r-2xl rounded-bl-2xl'} p-3 text-sm shadow-sm">
+                                <p class="text-[10px] font-bold opacity-70 mb-1">${d.user}</p><p>${d.text}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
